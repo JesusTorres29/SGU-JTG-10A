@@ -1,8 +1,5 @@
 pipeline {
   agent any
-  environment {
-        PATH = "/usr/local/bin:${env.PATH}"
-    }
 
   stages {
     stage('Checkout SCM') {
@@ -13,19 +10,20 @@ pipeline {
 
     stage('Parando servicios') {
       steps {
-        sh 'docker compose down || true'
+        bat 'docker compose down || exit 0'
       }
     }
 
-    stage('Eliminadno imagenes antiguas...') {
+    stage('Eliminando imagenes antiguas...') {
         steps {
-            sh '''
-                IMAGES=$(docker images --filter "label=com.docker.compose.project=demo" -q)
-                if [ -n "$IMAGES" ]; then
-                   docker rmi -f $IMAGES
-                else
-                   echo "No hay images por borrar"
-                fi
+            bat '''
+                @echo off
+                for /f "tokens=*" %%i in ('docker images --filter "label=com.docker.compose.project=demo" -q') do (
+                    docker rmi -f %%i
+                )
+                if errorlevel 1 (
+                    echo No hay imagenes por borrar
+                )
             '''
         }
     }
@@ -38,7 +36,7 @@ pipeline {
 
     stage('Construyendo y desplegando') {
       steps {
-        sh 'docker compose up --build -d'
+        bat 'docker compose up --build -d'
       }
     }
   }
