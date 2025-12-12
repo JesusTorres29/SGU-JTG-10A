@@ -1,9 +1,12 @@
-// Construye la URL base a partir de variables de Vite
-const HOST = import.meta.env.VITE_API_HOST ?? 'localhost';
-const PORT = import.meta.env.VITE_API_PORT ?? '8081';
-const BASE = import.meta.env.VITE_API_BASE ?? '/sgu-api'; // <-- ojo aquí
+const ENV = import.meta.env;
 
-export const API_URL = `http://${HOST}:${PORT}${BASE}`;
+const HOST = ENV.VITE_API_HOST ?? 'localhost';
+const PORT = ENV.VITE_API_PORT ?? '8081';
+const BASE = ENV.VITE_API_BASE ?? '/sgu-api';
+const PROTOCOL = ENV.VITE_API_PROTOCOL ?? 'https';
+
+export const API_URL = `${PROTOCOL}://${HOST}:${PORT}${BASE}`;
+
 
 async function handle(res) {
   if (!res.ok) {

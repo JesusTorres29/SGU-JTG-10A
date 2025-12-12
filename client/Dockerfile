@@ -3,24 +3,29 @@ FROM node:20 AS build
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm install
+RUN npm install --legacy-peer-deps && \
+    npm install -g vite@^7.1.7
 
 COPY . .
 
 ARG API_HOST
 ARG API_PORT
 ARG API_BASE
+ARG API_PROTOCOL
 
 ENV VITE_API_HOST=$API_HOST
 ENV VITE_API_PORT=$API_PORT
 ENV VITE_API_BASE=$API_BASE
+ENV VITE_API_PROTOCOL=$API_PROTOCOL
 
-RUN npm run build
+RUN vite build
 
 FROM nginx:alpine
 
 COPY --from=build /app/dist /usr/share/nginx/html
 
-EXPOSE 80
+COPY ./nginx.conf /etc/nginx/nginx.conf
+
+EXPOSE 80 443
 
 CMD ["nginx", "-g", "daemon off;"]

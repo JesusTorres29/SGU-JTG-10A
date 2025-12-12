@@ -26,11 +26,15 @@ services:
         API_HOST: localhost
         API_PORT: 8081
         API_BASE: /sgu-api
+        API_PROTOCOL: https
     container_name: sgu-frontend
     ports:
-      - "3000:80"
+      - "80:80"
+      - "3443:443"
     networks:
       - sgu-net
+    volumes:
+      - certbot-conf:/etc/letsencrypt:ro
     depends_on:
       - database
     restart: unless-stopped
@@ -48,15 +52,21 @@ services:
       DB_USER: root
       DB_PASSWORD: root
       DB_NAME: sgu_demo
+      SERVER_SSL_ENABLED: true
+      SERVER_SSL_KEYSTORE: /etc/letsencrypt/live/localhost/keystore.p12
+      SERVER_SSL_KEYSTORE_PASS: changeit
+
     ports:
       - "8081:8080"
     networks:
       - sgu-net
+    volumes:
+      - certbot-conf:/etc/letsencrypt:ro
     depends_on:
       database:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health || exit 1"]
+      test: ["CMD-SHELL", "wget --no-check-certificate -qO- http://localhost:8080/actuator/health || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -64,6 +74,8 @@ services:
 
 volumes:
   sgu-volume:
+    external: true
+  certbot-conf:
     external: true
 
 networks:

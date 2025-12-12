@@ -4,6 +4,8 @@ import UserForm from './components/UserForm';
 import UsersTable from './components/UsersTable';
 import './index.css';
 
+import TestController from './modules/test.controller';
+
 function App() {
   const [users, setUsers] = useState([]);
   const [editing, setEditing] = useState(null);
@@ -46,7 +48,7 @@ function App() {
   return (
     <div className="container">
       <header>
-        <h1>SGU-JJRR-10A</h1>
+        <h1>SGU-JTG-10A</h1>
         <p>One-page: registra y consulta usuarios</p>
       </header>
 
@@ -63,6 +65,10 @@ function App() {
       ) : (
         <UsersTable users={users} onEdit={setEditing} onDelete={del} />
       )}
+
+      <div>
+        <button onClick={() => TestController.callToApi()}>Llamar api</button>
+      </div>
     </div>
   );
 }
