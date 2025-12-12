@@ -10,7 +10,14 @@ pipeline {
 
     stage('Parando servicios') {
       steps {
-        bat 'docker compose down || exit 0'
+        bat '''
+            @echo off
+            cd /d %WORKSPACE%
+            echo Deteniendo y eliminando contenedores existentes...
+            docker compose down --remove-orphans || exit 0
+            docker stop sgu-database sgu-backend sgu-frontend 2>nul || echo No hay contenedores corriendo
+            docker rm sgu-database sgu-backend sgu-frontend 2>nul || echo Contenedores ya eliminados
+        '''
       }
     }
 
@@ -60,12 +67,16 @@ pipeline {
       steps {
         bat '''
             @echo off
+            cd /d %WORKSPACE%
             echo Construyendo imágenes...
             docker compose build
             if errorlevel 1 (
                 echo Error al construir las imágenes
                 exit 1
             )
+            echo Eliminando contenedores existentes antes de iniciar...
+            docker stop sgu-database sgu-backend sgu-frontend 2>nul
+            docker rm sgu-database sgu-backend sgu-frontend 2>nul
             echo Iniciando servicios...
             docker compose up -d
             if errorlevel 1 (
@@ -73,6 +84,8 @@ pipeline {
                 exit 1
             )
             echo Servicios iniciados correctamente
+            timeout /t 5 /nobreak >nul
+            docker compose ps
         '''
       }
     }
